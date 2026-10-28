@@ -1,0 +1,112 @@
+@import 'tailwindcss';
+
+/*
+ * Tokens do visual. Inspirado num app de mensagens no modo escuro, mas com
+ * paleta própria: "madrugada" azulada no fundo, menta para ações e âmbar
+ * como a cor da suspeita (votos e a revelação da IA).
+ */
+@theme {
+  --color-ink: #0e151c;
+  --color-night: #16212b;
+  --color-raised: #1e2a35;
+  --color-line: #263442;
+  --color-bubble-in: #1e2a35;
+  --color-bubble-out: #1d4d44;
+  --color-mint: #3ccf9e;
+  --color-mint-deep: #23996f;
+  --color-amber: #f5b53f;
+  --color-rose: #ef6b73;
+  --color-text: #e8edf1;
+  --color-muted: #8a9aa8;
+
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Color Emoji',
+    sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-ink);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Papel de parede do chat: pontilhado discreto. */
+.chat-wall {
+  background-color: #0b1218;
+  background-image: radial-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-amber);
+  outline-offset: 2px;
+}
+
+/* "digitando..." */
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+.typing-dot {
+  animation: typing-dot 1.2s infinite;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* A revelação: o único momento coreografado do jogo. */
+@keyframes stamp {
+  0% {
+    opacity: 0;
+    transform: scale(1.6) rotate(-8deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.94) rotate(-3deg);
+  }
+  100% {
+    transform: scale(1) rotate(-3deg);
+  }
+}
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 0 0 rgb(245 181 63 / 0.6);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgb(245 181 63 / 0);
+  }
+}
+.reveal-stamp {
+  animation: stamp 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.2) 0.3s both;
+}
+.reveal-glow {
+  animation: glow 1.4s ease-out 1s 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typing-dot,
+  .reveal-stamp,
+  .reveal-glow {
+    animation: none;
+  }
+}

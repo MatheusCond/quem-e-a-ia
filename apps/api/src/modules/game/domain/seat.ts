@@ -1,6 +1,6 @@
 import { GAME_RULES, RoomSettings, SeatAvatar, VoteTarget } from '@quem/shared';
 import { randomUUID } from 'node:crypto';
-import { pickOne, Random, shuffle } from '../../../shared/random';
+import { Random, shuffle } from '../../../shared/random';
 import { AVATAR_COLORS, AVATAR_EMOJIS, PSEUDONYMS } from './content';
 
 export type SeatRole = 'player' | 'master';
@@ -72,13 +72,16 @@ export function decideAiCount(playerCount: number, settings: RoomSettings, rando
 export function drawSeats(playerIds: string[], settings: RoomSettings, random: Random): Seat[] {
   const aiCount = decideAiCount(playerIds.length, settings, random);
   const masters = new Set(shuffle(playerIds, random).slice(0, aiCount));
+  // Embaralhar e usar por índice garante nomes, emojis e cores sem repetição.
   const pseudonyms = shuffle(PSEUDONYMS, random);
+  const emojis = shuffle(AVATAR_EMOJIS, random);
+  const colors = shuffle(AVATAR_COLORS, random);
 
   const seats = playerIds.map((playerId, index): Seat => ({
     id: randomUUID(),
     playerId,
     pseudonym: pseudonyms[index % pseudonyms.length],
-    avatar: { emoji: pickOne(AVATAR_EMOJIS, random), color: pickOne(AVATAR_COLORS, random) },
+    avatar: { emoji: emojis[index % emojis.length], color: colors[index % colors.length] },
     role: masters.has(playerId) ? 'master' : 'player',
     lastMessageAt: null,
     vote: null,

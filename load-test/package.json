@@ -5,6 +5,7 @@
   "description": "Simula salas com jogadores robôs para medir a API em tempo real.",
   "scripts": {
     "start": "tsx src/run.ts",
+    "bots": "tsx src/bots.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
