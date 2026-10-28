@@ -36,6 +36,10 @@ export default tseslint.config(
     languageOptions: { globals: globals.node, sourceType: 'commonjs' },
   },
   {
+    files: ['deploy/**/*.mjs'],
+    languageOptions: { globals: globals.node },
+  },
+  {
     files: ['apps/web/**/*.{ts,tsx}'],
     languageOptions: { globals: globals.browser },
     plugins: { 'react-hooks': reactHooks },

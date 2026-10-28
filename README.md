@@ -113,6 +113,17 @@ npm install
 npm run bots -w @quem/load-test
 ```
 
+### Jogar com amigos pela internet
+
+- **Na hora, sem conta:** `cloudflared tunnel --url http://localhost:8080` cria um
+  endereço `https` temporário para o jogo que está rodando no seu PC.
+- **Endereço fixo e gratuito:** o [render.yaml](render.yaml) sobe o jogo no Render
+  em modo processo único (API, worker e front-end num container, eventos em memória
+  e arquivos no Postgres).
+- **No celular:** o site é um PWA; "Adicionar à tela inicial" abre em tela cheia.
+
+Passo a passo e o que muda em cada modo: [docs/HOSPEDAGEM.md](docs/HOSPEDAGEM.md).
+
 ### Com a IA de verdade (Gemini, custo zero)
 
 1. Crie uma chave no [Google AI Studio](https://aistudio.google.com/apikey), num
@@ -154,10 +165,10 @@ npm run lint
 ```
 
 Todos os testes usam o `FakeLlmProvider` ou um barramento em memória: nenhum
-depende de rede nem gasta cota. Na última execução: 92 testes unitários
-(shared 8, cloud 6, api 49, worker 29) e 14 ponta a ponta. A CI
+depende de rede nem gasta cota. Na última execução: 94 testes unitários
+(shared 8, cloud 8, api 49, worker 29) e 16 ponta a ponta. A CI
 (`.github/workflows/ci.yml`) roda lint, formatação, tipos, testes e o build das
-três imagens Docker.
+imagens Docker (as três do compose e a do modo processo único).
 
 O banco dos testes ponta a ponta é `quem_e_a_ia_test` (criado sozinho se não
 existir). Para usar outro, defina `TEST_DATABASE_URL`.
@@ -179,6 +190,9 @@ Todas são opcionais; os valores padrão estão em [.env.example](.env.example).
 | `AI_DAILY_MAX_CALLS`, `AI_DAILY_MAX_TOKENS` | worker | Disjuntor diário de orçamento. |
 | `MAX_MATCHES_PER_ROOM_PER_DAY` | api | Partidas por sala por dia. |
 | `RATE_LIMIT_PER_MINUTE` | api | Requisições REST por minuto por IP. |
+| `MESSAGE_BUS` | api e worker | `aws` (padrão) ou `memory` (modo processo único). |
+| `OBJECT_STORAGE` | api | `s3` (padrão) ou `postgres` (modo processo único). |
+| `WEB_DIST_DIR` | api | Pasta do front-end compilado para a API servir (modo processo único). |
 
 ## Controle de custo de IA
 

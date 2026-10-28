@@ -4,6 +4,7 @@ import { defineConfig } from '@mikro-orm/postgresql';
 import { ChatMessageSchema, GameMatchSchema } from './modules/game/infrastructure/game.schema';
 import { ReportSchema } from './modules/moderation/infrastructure/report.schema';
 import { PlayerSchema, RoomSchema } from './modules/rooms/infrastructure/rooms.schema';
+import { StoredObjectSchema } from './infrastructure/storage/stored-object.schema';
 
 /**
  * Configuração do MikroORM, usada pela aplicação e pela CLI
@@ -14,7 +15,14 @@ import { PlayerSchema, RoomSchema } from './modules/rooms/infrastructure/rooms.s
  */
 export default defineConfig({
   clientUrl: process.env.DATABASE_URL ?? 'postgresql://quem:quem@localhost:5432/quem_e_a_ia',
-  entities: [RoomSchema, PlayerSchema, GameMatchSchema, ChatMessageSchema, ReportSchema],
+  entities: [
+    RoomSchema,
+    PlayerSchema,
+    GameMatchSchema,
+    ChatMessageSchema,
+    ReportSchema,
+    StoredObjectSchema,
+  ],
   extensions: [Migrator],
   migrations: {
     path: join(__dirname, 'migrations'),

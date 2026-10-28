@@ -9,7 +9,8 @@ export interface StoredObject {
 
 /**
  * Porta de armazenamento de arquivos. Em produção é o S3 (LocalStack no
- * desenvolvimento); nos testes, um Map em memória.
+ * desenvolvimento); na hospedagem gratuita, uma tabela do Postgres; nos
+ * testes, um Map em memória.
  */
 export abstract class ObjectStorage {
   abstract put(key: string, body: Buffer | string, contentType: string): Promise<void>;

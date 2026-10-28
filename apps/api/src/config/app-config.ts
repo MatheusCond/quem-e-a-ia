@@ -1,5 +1,11 @@
 import { Logger } from '@nestjs/common';
-import { AwsConnection, awsConnectionFromEnv, loadSecrets } from '@quem/cloud';
+import {
+  AwsConnection,
+  awsConnectionFromEnv,
+  loadSecrets,
+  MessageBusDriver,
+  messageBusDriverFromEnv,
+} from '@quem/cloud';
 
 /**
  * Configuração da API, montada uma vez na subida.
@@ -10,10 +16,15 @@ export interface AppConfig {
   port: number;
   databaseUrl: string;
   aws: AwsConnection;
+  messageBus: MessageBusDriver;
+  /** "s3" no docker compose; "postgres" quando não há S3 (hospedagem gratuita). */
+  objectStorage: 's3' | 'postgres';
   bucket: string;
   jwtSecret: string;
   byokEncryptionKey: string;
   corsOrigin: string | boolean;
+  /** Pasta do front-end compilado, servida pela própria API (modo processo único). */
+  webDistDir: string | null;
   limits: {
     maxMatchesPerRoomPerDay: number;
     requestsPerMinutePerIp: number;
@@ -44,10 +55,13 @@ export async function loadAppConfig(env: NodeJS.ProcessEnv = process.env): Promi
     port: intFrom(env.PORT, 3000),
     databaseUrl: env.DATABASE_URL ?? 'postgresql://quem:quem@localhost:5432/quem_e_a_ia',
     aws,
+    messageBus: messageBusDriverFromEnv(env),
+    objectStorage: env.OBJECT_STORAGE === 'postgres' ? 'postgres' : 's3',
     bucket: env.S3_BUCKET ?? 'quem-e-a-ia',
     jwtSecret: secrets.JWT_SECRET,
     byokEncryptionKey: secrets.BYOK_ENCRYPTION_KEY,
     corsOrigin: env.CORS_ORIGIN || true,
+    webDistDir: env.WEB_DIST_DIR || null,
     limits: {
       maxMatchesPerRoomPerDay: intFrom(env.MAX_MATCHES_PER_ROOM_PER_DAY, 30),
       requestsPerMinutePerIp: intFrom(env.RATE_LIMIT_PER_MINUTE, 60),

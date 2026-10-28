@@ -143,6 +143,13 @@ chamada ao LLM.
   endpoint de moderação do provedor fica para depois.
 - **Versões estáveis conhecidas** (NestJS 11, MikroORM 6, TypeScript 5.9, Vite 7)
   em vez das majors mais novas, que mudaram para ESM e trocaram de compilador.
+- **Modo processo único para hospedagem gratuita.** Os planos gratuitos dão um
+  container, sem SNS/SQS nem S3. Em vez de um segundo projeto, a API e o worker
+  ganharam um `bootstrap.ts` exportável e os adaptadores viraram configuráveis
+  (`MESSAGE_BUS=memory`, `OBJECT_STORAGE=postgres`). O `deploy/standalone/start.mjs`
+  sobe os dois no mesmo Node, e a API serve o front-end. O custo é perder
+  reentrega e DLQ; o docker compose continua sendo a arquitetura de referência.
+  Detalhes em [HOSPEDAGEM.md](HOSPEDAGEM.md).
 - **Socket.IO com ack** em toda ação: o front-end mostra o erro exato para quem
   tentou ("Calma! Espere um pouquinho...") sem um evento de erro genérico.
 
@@ -209,3 +216,9 @@ Os próximos apareceram na revisão do front-end com as Web Interface Guidelines
 13. **Dois contornos de foco nos campos.** O estilo global de `:focus-visible` estava
     fora das layers do Tailwind e ganhava do `outline-none` dos campos, que têm anel
     próprio. Foi movido para `@layer base`.
+14. **A migração nova quebrou o reset dos testes ponta a ponta.** A tabela
+    `stored_objects` foi criada só por migração, sem mapeamento no MikroORM. O
+    `dropSchema` dos testes só apaga as tabelas que o ORM conhece, então ela
+    sobrevivia e a migração falhava com "relation already exists" no arquivo de
+    teste seguinte. A tabela ganhou um `EntitySchema`, e o armazenamento passou a
+    usar o próprio ORM (`upsert` e `findOne`) em vez de SQL solto.

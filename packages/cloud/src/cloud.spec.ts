@@ -1,6 +1,7 @@
 import { AiUnavailableEvent, BusEvent } from '@quem/shared';
 import { ApiKeyCipher } from './api-key-cipher';
 import { parseBody } from './aws-message-bus';
+import { createMessageBus, messageBusDriverFromEnv } from './create-message-bus';
 import { InMemoryMessageBus } from './in-memory-bus';
 import { loadSecrets } from './secrets';
 
@@ -47,6 +48,23 @@ describe('InMemoryMessageBus', () => {
     await bus.drain();
 
     expect(received).toEqual([]);
+  });
+});
+
+describe('createMessageBus', () => {
+  const options = { connection: { region: 'us-east-1' }, logger: silentLogger };
+
+  it('shares one in-memory bus across the process', () => {
+    const api = createMessageBus('memory', options);
+    const worker = createMessageBus('memory', options);
+
+    expect(api).toBe(worker);
+    expect(api).toBeInstanceOf(InMemoryMessageBus);
+  });
+
+  it('reads the driver from MESSAGE_BUS and defaults to aws', () => {
+    expect(messageBusDriverFromEnv({ MESSAGE_BUS: 'memory' })).toBe('memory');
+    expect(messageBusDriverFromEnv({})).toBe('aws');
   });
 });
 

@@ -1,7 +1,7 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Logger, Module } from '@nestjs/common';
-import { ApiKeyCipher, AwsMessageBus } from '@quem/cloud';
+import { ApiKeyCipher, createMessageBus } from '@quem/cloud';
 import { ConfigModule } from './config/config.module';
 import { WORKER_CONFIG, WorkerConfig } from './config/worker-config';
 import { WorkerHttpController } from './infrastructure/http.controller';
@@ -36,7 +36,10 @@ import { PostgresUsageRepository } from './modules/usage/infrastructure/postgres
       provide: MESSAGE_BUS,
       inject: [WORKER_CONFIG],
       useFactory: (config: WorkerConfig) =>
-        new AwsMessageBus({ connection: config.aws, logger: new Logger('MessageBus') }),
+        createMessageBus(config.messageBus, {
+          connection: config.aws,
+          logger: new Logger('MessageBus'),
+        }),
     },
     {
       provide: ApiKeyCipher,

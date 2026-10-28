@@ -1,5 +1,11 @@
 import { Logger } from '@nestjs/common';
-import { AwsConnection, awsConnectionFromEnv, loadSecrets } from '@quem/cloud';
+import {
+  AwsConnection,
+  awsConnectionFromEnv,
+  loadSecrets,
+  MessageBusDriver,
+  messageBusDriverFromEnv,
+} from '@quem/cloud';
 
 export type LlmProviderName = 'gemini' | 'ollama' | 'fake';
 
@@ -11,6 +17,7 @@ export interface WorkerConfig {
   port: number;
   databaseUrl: string;
   aws: AwsConnection;
+  messageBus: MessageBusDriver;
   llm: {
     provider: LlmProviderName;
     geminiApiKey: string | null;
@@ -56,6 +63,7 @@ export async function loadWorkerConfig(
     port: intFrom(env.PORT, 3001),
     databaseUrl: env.DATABASE_URL ?? 'postgresql://quem:quem@localhost:5432/quem_e_a_ia',
     aws,
+    messageBus: messageBusDriverFromEnv(env),
     llm: {
       provider: parseProvider(env.LLM_PROVIDER),
       geminiApiKey: secrets.GEMINI_API_KEY ?? null,

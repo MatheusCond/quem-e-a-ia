@@ -63,7 +63,10 @@ Contratos usados pelos três lados, sem dependências de runtime:
 Infraestrutura AWS compartilhada pela api e pelo worker:
 
 - `MessageBus` (interface) com `AwsMessageBus` (SNS para publicar, SQS com long
-  polling para consumir) e `InMemoryMessageBus` (testes).
+  polling para consumir) e `InMemoryMessageBus` (testes e modo processo único).
+  `createMessageBus` escolhe pelo `MESSAGE_BUS`; no driver `memory`, a API e o
+  worker do mesmo processo recebem a mesma instância
+  ([HOSPEDAGEM.md](HOSPEDAGEM.md)).
 - `loadSecrets`: Secrets Manager com fallback para variáveis de ambiente.
 - `ApiKeyCipher`: AES-256-GCM para a chave própria do Mestre.
 

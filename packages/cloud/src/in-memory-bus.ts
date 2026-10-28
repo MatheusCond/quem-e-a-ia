@@ -1,19 +1,30 @@
 import { BusEvent, QueueName, SUBSCRIPTIONS, TopicName } from '@quem/shared';
 import { EventHandler, MessageBus } from './message-bus';
 
+export interface InMemoryMessageBusOptions {
+  /** Guarda tudo em `published`. Útil nos testes; desligue em produção. */
+  keepHistory?: boolean;
+}
+
 /**
- * Barramento em memória para testes. Entrega cada evento, de forma
- * assíncrona, para as filas que assinam o tópico, igual ao SNS faria.
+ * Barramento em memória. Entrega cada evento, de forma assíncrona, para as
+ * filas que assinam o tópico, igual ao SNS faria. Usado nos testes e no modo
+ * processo único; não tem reentrega nem DLQ.
  */
 export class InMemoryMessageBus implements MessageBus {
   private readonly handlers = new Map<QueueName, EventHandler[]>();
   private readonly pending = new Set<Promise<void>>();
+  private readonly keepHistory: boolean;
   private running = false;
   /** Tudo que foi publicado, útil para asserções nos testes. */
   readonly published: Array<{ topic: TopicName; event: BusEvent }> = [];
 
+  constructor(options: InMemoryMessageBusOptions = {}) {
+    this.keepHistory = options.keepHistory ?? true;
+  }
+
   async publish(topic: TopicName, event: BusEvent): Promise<void> {
-    this.published.push({ topic, event });
+    if (this.keepHistory) this.published.push({ topic, event });
     if (!this.running) return;
     for (const queue of SUBSCRIPTIONS[topic]) {
       for (const handler of this.handlers.get(queue) ?? []) {
