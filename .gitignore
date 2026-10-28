@@ -1,0 +1,29 @@
+# Dependências e builds
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Segredos e configuração local
+.env
+.env.*
+!.env.example
+
+# Ambientes Python (nunca versionar)
+venv/
+.venv/
+__pycache__/
+
+# Dados locais do docker compose
+.localstack/
+.ollama/
+
+# Saídas do teste de carga
+load-test/results/
+
+# Editores e sistema
+.idea/
+.DS_Store
+Thumbs.db
+*.log

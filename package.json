@@ -1,0 +1,41 @@
+{
+  "name": "quem-e-a-ia",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Jogo multiplayer em tempo real: descubra qual participante do chat é uma IA.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "packages/shared",
+    "packages/cloud",
+    "apps/api",
+    "apps/worker",
+    "apps/web",
+    "load-test"
+  ],
+  "scripts": {
+    "build": "npm run build:packages && npm run build -w @quem/api -w @quem/worker -w @quem/web",
+    "build:packages": "npm run build -w @quem/shared -w @quem/cloud",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm test -w @quem/shared -w @quem/cloud -w @quem/api -w @quem/worker",
+    "test:e2e": "npm run test:e2e -w @quem/api",
+    "dev:api": "npm run start:dev -w @quem/api",
+    "dev:worker": "npm run start:dev -w @quem/worker",
+    "dev:web": "npm run dev -w @quem/web",
+    "load-test": "npm start -w @quem/load-test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.5.0",
+    "prettier": "^3.6.2",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.4"
+  }
+}

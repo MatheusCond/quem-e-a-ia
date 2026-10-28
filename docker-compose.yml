@@ -1,0 +1,133 @@
+# Sobe o jogo inteiro: docker compose up --build
+# Front-end: http://localhost:8080
+#
+# Nenhuma variável é obrigatória. Sem GEMINI_API_KEY, o worker usa o
+# FakeLLMProvider. Para rodar um modelo aberto local, use o perfil "ollama":
+#   docker compose --profile ollama up --build   (e LLM_PROVIDER=ollama no .env)
+
+name: quem-e-a-ia
+
+x-aws: &aws
+  AWS_REGION: us-east-1
+  AWS_ENDPOINT_URL: http://localstack:4566
+  AWS_ACCESS_KEY_ID: test
+  AWS_SECRET_ACCESS_KEY: test
+  SECRETS_ID: quem-e-a-ia/app
+  S3_BUCKET: quem-e-a-ia
+
+x-depends: &depends
+  postgres:
+    condition: service_healthy
+  localstack:
+    condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: quem
+      POSTGRES_PASSWORD: quem
+      POSTGRES_DB: quem_e_a_ia
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U quem -d quem_e_a_ia']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  localstack:
+    # Versões novas do LocalStack exigem conta e token; a 4.14 roda sem.
+    image: localstack/localstack:4.14
+    environment:
+      SERVICES: sns,sqs,s3,secretsmanager
+      # Só a LocalStack recebe a chave: ela vira um segredo no Secrets Manager
+      # e o worker lê de lá.
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      JWT_SECRET: ${JWT_SECRET:-dev-only-jwt-secret-change-me}
+      BYOK_ENCRYPTION_KEY: ${BYOK_ENCRYPTION_KEY:-dev-only-byok-key-change-me}
+    ports:
+      - '4566:4566'
+    volumes:
+      - ./infra/localstack/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh:ro
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -sf localhost:4566/_localstack/init/ready | grep -q ''"completed": true''',
+        ]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      <<: *aws
+      PORT: 3000
+      DATABASE_URL: postgresql://quem:quem@postgres:5432/quem_e_a_ia
+      MAX_MATCHES_PER_ROOM_PER_DAY: ${MAX_MATCHES_PER_ROOM_PER_DAY:-30}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-60}
+    ports:
+      - '3000:3000'
+    depends_on: *depends
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- localhost:3000/api/health || exit 1']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    environment:
+      <<: *aws
+      PORT: 3001
+      DATABASE_URL: postgresql://quem:quem@postgres:5432/quem_e_a_ia
+      LLM_PROVIDER: ${LLM_PROVIDER:-gemini}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash-lite}
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:1.5b}
+      AI_MAX_REPLIES_PER_MATCH: ${AI_MAX_REPLIES_PER_MATCH:-40}
+      AI_MAX_OUTPUT_TOKENS: ${AI_MAX_OUTPUT_TOKENS:-80}
+      AI_CONTEXT_MESSAGES: ${AI_CONTEXT_MESSAGES:-12}
+      AI_DAILY_MAX_CALLS: ${AI_DAILY_MAX_CALLS:-400}
+      AI_DAILY_MAX_TOKENS: ${AI_DAILY_MAX_TOKENS:-400000}
+    ports:
+      - '3001:3001'
+    depends_on: *depends
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - '8080:80'
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # Modelo aberto rodando local, sem internet e sem custo (perfil opcional).
+  ollama:
+    image: ollama/ollama:0.12.6
+    profiles: ['ollama']
+    volumes:
+      - ollama:/root/.ollama
+
+  ollama-pull:
+    image: ollama/ollama:0.12.6
+    profiles: ['ollama']
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ['ollama', 'pull', '${OLLAMA_MODEL:-qwen2.5:1.5b}']
+    depends_on:
+      - ollama
+
+volumes:
+  pgdata:
+  ollama:

@@ -1,0 +1,42 @@
+{
+  "name": "@quem/cloud",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Infraestrutura AWS compartilhada pela api e pelo worker: SNS/SQS, Secrets Manager e cifra de chaves.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.927.0",
+    "@aws-sdk/client-sns": "^3.927.0",
+    "@aws-sdk/client-sqs": "^3.927.0",
+    "@quem/shared": "1.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.19.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.5"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/src"
+    ],
+    "moduleNameMapper": {
+      "^@quem/shared$": "<rootDir>/../shared/src"
+    },
+    "transform": {
+      "^.+\\.ts$": [
+        "ts-jest",
+        {
+          "tsconfig": "tsconfig.spec.json"
+        }
+      ]
+    }
+  }
+}
