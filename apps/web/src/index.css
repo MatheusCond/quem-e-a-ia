@@ -1,12 +1,14 @@
 @import 'tailwindcss';
 
 /*
- * Tokens do visual. Inspirado num app de mensagens no modo escuro, mas com
- * paleta própria: "madrugada" azulada no fundo, menta para ações e âmbar
- * como a cor da suspeita (votos e a revelação da IA).
+ * Tokens do visual. Inspirado num app de mensagens no modo escuro, com
+ * identidade própria: "madrugada" azulada no fundo, menta para ações e
+ * âmbar como a cor da suspeita. O âmbar aparece como marca-texto: é ele
+ * que grifa as mensagens da IA na revelação.
  */
 @theme {
   --color-ink: #0e151c;
+  --color-wall: #0b1218;
   --color-night: #16212b;
   --color-raised: #1e2a35;
   --color-line: #263442;
@@ -17,12 +19,17 @@
   --color-amber: #f5b53f;
   --color-rose: #ef6b73;
   --color-text: #e8edf1;
-  --color-muted: #8a9aa8;
+  --color-muted: #8f9fad;
 
   --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
   --font-sans:
     system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Color Emoji',
     sans-serif;
+}
+
+html {
+  color-scheme: dark;
+  touch-action: manipulation;
 }
 
 html,
@@ -36,22 +43,42 @@ body {
   background: var(--color-ink);
   color: var(--color-text);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Papel de parede do chat: pontilhado discreto. */
+h1,
+h2 {
+  text-wrap: balance;
+}
+
+/* Em @layer base para que utilitários como outline-none (campos com anel próprio) ganhem. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-amber);
+    outline-offset: 2px;
+  }
+}
+
+/*
+ * Papel de parede do chat: pontos de interrogação espalhados, bem
+ * apagados. É o "desenho de fundo" do jogo, no lugar dos rabiscos dos
+ * apps de mensagem.
+ */
 .chat-wall {
-  background-color: #0b1218;
-  background-image: radial-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px);
-  background-size: 18px 18px;
+  background-color: var(--color-wall);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='%23ffffff' fill-opacity='0.022' font-family='Georgia,serif' font-weight='700'%3E%3Ctext x='14' y='40' font-size='30' transform='rotate(-14 24 30)'%3E%3F%3C/text%3E%3Ctext x='96' y='34' font-size='18' transform='rotate(12 100 28)'%3E%3F%3C/text%3E%3Ctext x='62' y='92' font-size='40' transform='rotate(6 72 80)'%3E%3F%3C/text%3E%3Ctext x='128' y='118' font-size='24' transform='rotate(-20 134 110)'%3E%3F%3C/text%3E%3Ctext x='22' y='138' font-size='16' transform='rotate(18 26 132)'%3E%3F%3C/text%3E%3C/g%3E%3C/svg%3E");
+  background-size: 160px 160px;
+  overscroll-behavior: contain;
 }
 
-:focus-visible {
-  outline: 2px solid var(--color-amber);
-  outline-offset: 2px;
+/* Cada mensagem fora da tela não é desenhada (chats longos continuam leves). */
+.message-row {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 52px;
 }
 
-/* "digitando..." */
+/* ---------- "digitando..." ---------- */
 @keyframes typing-dot {
   0%,
   60%,
@@ -74,39 +101,132 @@ body {
   animation-delay: 0.3s;
 }
 
-/* A revelação: o único momento coreografado do jogo. */
+/* ---------- Marca-texto âmbar ----------
+ * Um traço passa da esquerda para a direita por trás do conteúdo. Só
+ * transform e opacity são animados. O atraso vem de --marker-delay, para
+ * as mensagens da IA serem grifadas uma depois da outra.
+ */
+.marker {
+  position: relative;
+  isolation: isolate;
+}
+.marker::before {
+  content: '';
+  position: absolute;
+  inset: -1px -3px;
+  z-index: -1;
+  border-radius: 6px 14px 8px 16px;
+  background: linear-gradient(
+    100deg,
+    rgb(245 181 63 / 0.1),
+    rgb(245 181 63 / 0.34) 8%,
+    rgb(245 181 63 / 0.26) 92%,
+    rgb(245 181 63 / 0.4)
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: marker-sweep 0.55s cubic-bezier(0.3, 0.8, 0.3, 1) var(--marker-delay, 0s) forwards;
+}
+@keyframes marker-sweep {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ---------- Revelação ---------- */
 @keyframes stamp {
   0% {
     opacity: 0;
-    transform: scale(1.6) rotate(-8deg);
+    transform: scale(1.7) rotate(-10deg);
   }
   60% {
     opacity: 1;
-    transform: scale(0.94) rotate(-3deg);
+    transform: scale(0.94) rotate(-4deg);
   }
   100% {
-    transform: scale(1) rotate(-3deg);
-  }
-}
-@keyframes glow {
-  0% {
-    box-shadow: 0 0 0 0 rgb(245 181 63 / 0.6);
-  }
-  100% {
-    box-shadow: 0 0 0 10px rgb(245 181 63 / 0);
+    opacity: 1;
+    transform: scale(1) rotate(-4deg);
   }
 }
 .reveal-stamp {
-  animation: stamp 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.2) 0.3s both;
+  animation: stamp 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.2) var(--stamp-delay, 0.5s) both;
 }
-.reveal-glow {
-  animation: glow 1.4s ease-out 1s 2;
+
+/* Anel que se expande em volta do avatar da IA. */
+.reveal-ring {
+  position: relative;
+}
+.reveal-ring::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 9999px;
+  border: 3px solid var(--color-amber);
+  opacity: 0;
+  animation: ring 1.3s ease-out 0.9s 2;
+}
+@keyframes ring {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.rise {
+  animation: rise 0.45s ease-out var(--rise-delay, 0s) both;
+}
+
+/* ---------- Painel que sobe (Sheet) ---------- */
+@keyframes sheet-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.sheet-panel {
+  animation: sheet-up 0.22s ease-out;
+  overscroll-behavior: contain;
+}
+
+/* ---------- Barra de tempo da fase ---------- */
+.phase-bar {
+  transform-origin: left center;
+  transition:
+    transform 0.5s linear,
+    background-color 0.3s;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .typing-dot,
   .reveal-stamp,
-  .reveal-glow {
+  .reveal-ring::after,
+  .rise,
+  .sheet-panel {
     animation: none;
+  }
+  .marker::before {
+    animation: none;
+    transform: none;
+  }
+  .phase-bar {
+    transition: none;
   }
 }

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 
+const CLOCK = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
 export function formatClock(iso: string): string {
-  return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  return CLOCK.format(new Date(iso));
 }
 
 export function formatRemaining(ms: number): string {

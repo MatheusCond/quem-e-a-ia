@@ -109,6 +109,16 @@ export class GameMatch {
     return this.phase === 'reveal';
   }
 
+  /**
+   * Quem pode ver o prazo da fase. Com o número de IAs secreto, a criação de
+   * uma partida sem IA termina num momento aleatório: mostrar o cronômetro
+   * para quem espera entregaria que não existe Mestre. Só o Mestre vê.
+   */
+  deadlineVisibleTo(playerId: string): boolean {
+    if (this.phase !== 'creation' || !this.settings.secretAiCount) return true;
+    return this.isMaster(playerId);
+  }
+
   private transitionTo(next: MatchPhase, now: Date, random: Random): void {
     assertTransition(this.phase, next);
     this.phase = next;

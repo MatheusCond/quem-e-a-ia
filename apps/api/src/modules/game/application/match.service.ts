@@ -231,7 +231,7 @@ export class MatchService implements OnApplicationBootstrap {
   private onConversationStart(em: EntityManager, match: GameMatch, now: Date): void {
     if (match.theme) {
       const text = `Tema da rodada: ${match.theme}`;
-      this.delivery.post(em, match, ChatMessage.system(match.id, text, now), 'theme');
+      this.delivery.post(em, match, ChatMessage.system(match.id, text, now, 'theme'), 'theme');
     }
     const seconds = match.settings.conversationSeconds;
     if (match.settings.topicAndFlash && seconds >= FLASH_MIN_CONVERSATION_SECONDS) {

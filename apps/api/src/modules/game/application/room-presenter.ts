@@ -7,6 +7,7 @@ import { avatarUrl } from '../../rooms/application/rooms.service';
 import { ChatMessage } from '../domain/chat-message';
 import { DEFAULT_PERSONA } from '../domain/content';
 import { GameMatch } from '../domain/game-match';
+import { phaseDurationMs } from '../domain/match-state-machine';
 import { isCorrectVote } from '../domain/scoring';
 import { findCurrentMatch } from './match-queries';
 import { Realtime } from './realtime';
@@ -92,12 +93,14 @@ function matchView(match: GameMatch, players: Player[], playerId: string, now: D
   const seat = match.seatOfPlayer(playerId);
   const playerSeats = match.playerSeats();
   const flashOpen = match.flash && new Date(match.flash.endsAt) > now;
+  const showDeadline = match.deadlineVisibleTo(playerId);
 
   return {
     id: match.id,
     number: match.number,
     phase: match.phase,
-    phaseEndsAt: match.phaseEndsAt?.toISOString() ?? null,
+    phaseEndsAt: showDeadline ? (match.phaseEndsAt?.toISOString() ?? null) : null,
+    phaseDurationMs: showDeadline ? phaseDurationMs(match.phase, match.settings) : null,
     role: seat ? seat.role : 'spectator',
     mySeatId: seat?.role === 'player' ? seat.id : null,
     seats:

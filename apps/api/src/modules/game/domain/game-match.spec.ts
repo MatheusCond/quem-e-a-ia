@@ -76,6 +76,18 @@ describe('GameMatch.start', () => {
     expect(names.size).toBe(PLAYERS.length);
   });
 
+  it('hides the creation deadline from non-masters when the AI count is secret', () => {
+    const secret = startMatch({ secretAiCount: true }, PLAYERS, 3);
+    for (const seat of secret.seats) {
+      expect(secret.deadlineVisibleTo(seat.playerId)).toBe(seat.role === 'master');
+    }
+    const open = startMatch({ secretAiCount: false });
+    expect(open.seats.every((s) => open.deadlineVisibleTo(s.playerId))).toBe(true);
+    open.advance(at(120), seededRandom(1));
+    secret.advance(at(120), seededRandom(1));
+    expect(secret.seats.every((s) => secret.deadlineVisibleTo(s.playerId))).toBe(true);
+  });
+
   it('ends the creation early at a random time when there is no AI', () => {
     let match = startMatch({ secretAiCount: true }, PLAYERS, 0);
     for (let seed = 1; match.aiCount !== 0; seed++) {

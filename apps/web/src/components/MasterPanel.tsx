@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { GAME_RULES } from '@quem/shared';
+import { type FormEvent, useEffect, useState } from 'react';
 import { formatRemaining, useRemaining } from '../lib/time';
 import type { Game } from '../lib/useGame';
+import { SeatAvatar } from './avatars';
 import { Button, ErrorText, Switch, TextArea, TextInput } from './ui';
 
 /**
@@ -14,13 +16,20 @@ export function MasterPanel({ game }: { game: Game }) {
   const aiSeat = match.seats.find((s) => s.seatId === master.aiSeatId);
   const [text, setText] = useState('');
   const [error, setError] = useState('');
+  const max = settings.messageLimits ? GAME_RULES.maxMessageChars : GAME_RULES.hardMaxMessageChars;
 
   if (match.phase !== 'conversation') {
-    return <p className="text-center text-sm text-muted">Você é o Mestre: só assiste a votação.</p>;
+    return (
+      <p className="py-1 text-center text-sm text-muted">
+        Você é o Mestre: agora é só torcer na votação.
+      </p>
+    );
   }
   if (game.draft) return <DraftEditor game={game} />;
 
-  async function intervene() {
+  async function intervene(event: FormEvent) {
+    event.preventDefault();
+    if (!text.trim()) return;
     setError('');
     const result = await game.send('master:intervene', { text });
     if (result.ok) setText('');
@@ -33,39 +42,56 @@ export function MasterPanel({ game }: { game: Game }) {
     if (!result.ok) setError(result.error.message);
   }
 
+  const canIntervene = settings.masterInterventions && master.interventionsLeft > 0;
+
   return (
-    <div className="space-y-2">
-      <p className="text-sm text-muted">
-        Sua IA é <strong className="text-amber">{aiSeat?.pseudonym}</strong>. Você não digita no
-        chat.
+    <div className="space-y-3">
+      <p className="flex items-center gap-2 text-sm text-muted">
+        {aiSeat && <SeatAvatar avatar={aiSeat.avatar} size={22} />}
+        <span>
+          Sua IA é <strong className="text-amber">{aiSeat?.pseudonym}</strong>. Você só observa
+          {canIntervene &&
+            ` (${master.interventionsLeft} ${master.interventionsLeft === 1 ? 'intervenção' : 'intervenções'})`}
+          .
+        </span>
       </p>
-      {settings.masterInterventions && master.interventionsLeft > 0 ? (
+      {canIntervene && (
         <>
-          <div className="flex gap-2">
-            <TextInput
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder={`Escrever como a IA (${master.interventionsLeft} restantes)`}
-              maxLength={settings.messageLimits ? 160 : 500}
-              onKeyDown={(e) => e.key === 'Enter' && text.trim() && intervene()}
-            />
-            <Button variant="amber" onClick={intervene} disabled={!text.trim()}>
+          <form onSubmit={intervene} className="flex gap-2">
+            <label className="min-w-0 flex-1">
+              <span className="sr-only">Escrever como a IA</span>
+              <TextInput
+                name="intervention"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Falar como a IA…"
+                maxLength={max}
+                autoComplete="off"
+                className="rounded-full"
+              />
+            </label>
+            <Button type="submit" variant="amber" disabled={!text.trim()}>
               Enviar
             </Button>
-          </div>
-          <label className="flex items-center justify-between gap-3 text-sm">
-            <span>Revisar a próxima resposta da IA antes de enviar</span>
+          </form>
+          <label
+            htmlFor="review-next"
+            className="flex cursor-pointer items-center justify-between gap-3 text-sm"
+          >
+            <span>Revisar a próxima resposta da IA antes de ela sair</span>
             <Switch
-              label="Revisar a próxima resposta"
+              id="review-next"
+              label="Revisar a próxima resposta da IA"
               checked={master.reviewNext}
               onChange={toggleReview}
             />
           </label>
         </>
-      ) : (
-        settings.masterInterventions && (
-          <p className="text-sm text-muted">Você já usou as 3 intervenções.</p>
-        )
+      )}
+      {settings.masterInterventions && !canIntervene && (
+        <p className="text-sm text-muted">
+          Você já usou as {GAME_RULES.masterInterventions} intervenções.
+        </p>
       )}
       <ErrorText>{error}</ErrorText>
     </div>
@@ -83,23 +109,30 @@ function DraftEditor({ game }: { game: Game }) {
     if (remaining <= 0) game.clearDraft();
   }, [remaining, game]);
 
-  async function approve() {
+  async function approve(event: FormEvent) {
+    event.preventDefault();
     const result = await game.send('master:approve-draft', { draftId: draft.draftId, text });
     if (result.ok) game.clearDraft();
     else setError(result.error.message);
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-baseline justify-between text-sm">
+    <form onSubmit={approve} className="space-y-2" aria-live="polite">
+      <label htmlFor="draft" className="flex items-baseline justify-between text-sm">
         <span className="font-semibold text-amber">A IA quer mandar isto</span>
         <span className="text-muted tabular-nums">{formatRemaining(remaining)}</span>
-      </div>
-      <TextArea rows={2} value={text} onChange={(e) => setText(e.target.value)} />
+      </label>
+      <TextArea
+        id="draft"
+        name="draft"
+        rows={2}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
       <ErrorText>{error}</ErrorText>
-      <Button variant="amber" className="w-full" onClick={approve} disabled={!text.trim()}>
+      <Button type="submit" variant="amber" className="w-full" disabled={!text.trim()}>
         {text === draft.text ? 'Enviar como está' : 'Enviar editada (gasta 1 intervenção)'}
       </Button>
-    </div>
+    </form>
   );
 }

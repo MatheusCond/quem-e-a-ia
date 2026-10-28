@@ -231,7 +231,9 @@ e as mensagens humanas ganham de 0,4 a 2,2 s de atraso aleatório
 **19. Como o número secreto de IAs não vaza?**
 `decideAiCount` sorteia 0, 1 ou 2 com pesos. Com zero IAs, a criação termina num
 momento aleatório (sem Mestre, ninguém "termina"). A view esconde quantos podem
-votar (`eligible: null`) e a votação não encerra antes do prazo.
+votar (`eligible: null`), a votação não encerra antes do prazo e o cronômetro da
+criação só vai para o Mestre (`GameMatch.deadlineVisibleTo`); antes, o prazo curto
+da criação entregava a resposta.
 
 **20. O que você mediria antes de colocar em produção?**
 O teste de carga já mede ack e entrega (p50/p95/p99) com 250 sockets numa máquina.

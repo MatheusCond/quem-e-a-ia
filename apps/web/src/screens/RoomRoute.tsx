@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { RoomCode } from '../components/RoomCode';
 import { Button, ErrorText, TextInput } from '../components/ui';
 import { api, ApiError, type RoomSummary } from '../lib/api';
 import { clearToken, loadToken, saveToken } from '../lib/session';
@@ -64,8 +65,7 @@ function JoinForm({
       if (photo) await api.uploadAvatar(result.token, photo).catch(() => undefined);
       onJoined(result.token);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Algo deu errado.');
-    } finally {
+      setError(e instanceof ApiError ? e.message : 'Algo deu errado. Tente de novo.');
       setBusy(false);
     }
   }
@@ -74,8 +74,11 @@ function JoinForm({
     return (
       <main className="mx-auto max-w-lg px-4 pt-16">
         <h1 className="font-display text-3xl font-bold">Sala {code} não encontrada</h1>
-        <p className="mt-2 text-muted">{missing}</p>
-        <Link to="/" className="mt-6 inline-block font-semibold text-mint">
+        <p className="mt-2 text-muted">{missing} Peça o link de novo para quem criou a sala.</p>
+        <Link
+          to="/"
+          className="mt-6 inline-block rounded-full font-semibold text-mint hover:underline"
+        >
           Criar uma sala nova
         </Link>
       </main>
@@ -84,41 +87,51 @@ function JoinForm({
 
   return (
     <main className="mx-auto max-w-lg px-4 pt-12 pb-10">
-      <p className="text-muted">Você foi chamado para a sala</p>
-      <h1 className="font-display text-5xl font-extrabold tracking-[0.12em]">{code}</h1>
-      {summary && (
-        <p className="mt-1 text-muted">
-          {summary.playerCount} de {summary.maxPlayers} jogadores já estão lá.
-        </p>
-      )}
+      <p className="font-display text-[15px] font-bold text-amber" translate="no">
+        Quem é a IA?
+      </p>
+      <h1 className="mt-4 font-display text-3xl leading-tight font-extrabold">
+        Te chamaram para uma partida
+      </h1>
+      <div className="mt-5">
+        <RoomCode code={code} />
+      </div>
+      <p className="mt-3 text-muted" aria-live="polite">
+        {summary
+          ? `${summary.playerCount} de ${summary.maxPlayers} jogadores já estão na sala.`
+          : 'Procurando a sala…'}
+      </p>
       {notice && <p className="mt-4 rounded-xl bg-raised p-3 text-sm">{notice}</p>}
 
-      <form onSubmit={join} className="mt-8 space-y-4">
+      <form onSubmit={join} className="mt-8 space-y-5">
         <label className="block">
-          <span className="mb-1 block text-sm text-muted">Seu apelido</span>
+          <span className="mb-1.5 block text-sm font-medium">Seu apelido</span>
           <TextInput
+            name="nickname"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             maxLength={20}
-            placeholder="Como os amigos te chamam"
+            placeholder="Como os amigos te chamam…"
+            autoComplete="nickname"
+            spellCheck={false}
             required
-            autoFocus
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-sm text-muted">
-            Foto (opcional, aparece só fora do chat)
+          <span className="mb-1.5 block text-sm font-medium">
+            Foto <span className="font-normal text-muted">(opcional, aparece só fora do chat)</span>
           </span>
           <input
+            name="photo"
             type="file"
             accept="image/jpeg,image/png,image/webp"
             onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
-            className="block w-full text-sm text-muted file:mr-3 file:rounded-full file:border-0 file:bg-raised file:px-4 file:py-2 file:text-text"
+            className="block w-full text-sm text-muted file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-raised file:px-4 file:py-2 file:text-text hover:file:bg-line"
           />
         </label>
         <ErrorText>{error}</ErrorText>
-        <Button type="submit" className="w-full" disabled={busy || !nickname.trim() || !summary}>
-          Entrar
+        <Button type="submit" className="w-full" disabled={busy || !summary}>
+          {busy ? 'Entrando…' : 'Entrar na sala'}
         </Button>
       </form>
     </main>

@@ -26,7 +26,7 @@ export function VotePanel({ game }: { game: Game }) {
 
   if (!match.canVote) {
     return (
-      <p className="text-center text-sm text-muted">
+      <p className="py-1 text-center text-sm text-muted">
         {match.role === 'master'
           ? 'O Mestre não vota. Torça para ninguém achar a sua IA.'
           : 'Você está assistindo esta partida.'}
@@ -39,27 +39,41 @@ export function VotePanel({ game }: { game: Game }) {
       ? `${match.votes.voted} já votaram`
       : `${match.votes.voted} de ${match.votes.eligible} votaram`;
 
+  const option = (selected: boolean) =>
+    `flex min-h-12 items-center gap-2.5 rounded-2xl border px-3 py-2 text-left text-sm transition-colors disabled:cursor-not-allowed ${
+      selected
+        ? 'border-amber bg-amber/15 font-semibold text-text'
+        : 'border-line bg-ink enabled:hover:border-muted'
+    }`;
+
   return (
     <div>
-      <div className="mb-2 flex items-baseline justify-between">
-        <h2 className="font-display text-lg font-bold">Quem é a IA?</h2>
-        <span className="text-sm text-muted">{progress}</span>
+      <div className="mb-2.5 flex items-baseline justify-between gap-3">
+        <h2 id="voto" className="font-display text-lg font-bold">
+          Quem é a IA?
+        </h2>
+        <span className="text-sm text-muted tabular-nums" aria-live="polite">
+          {progress}
+        </span>
       </div>
-      <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Seu voto">
-        {candidates.map((seat) => (
-          <button
-            key={seat.seatId}
-            type="button"
-            role="radio"
-            aria-checked={mine?.target === seat.seatId}
-            disabled={mine?.locked}
-            onClick={() => vote(seat.seatId)}
-            className={`flex items-center gap-2 rounded-xl border px-2 py-2 text-left text-sm ${mine?.target === seat.seatId ? 'border-amber bg-amber/10' : 'border-line bg-ink'}`}
-          >
-            <SeatAvatar avatar={seat.avatar} size={28} />
-            <span className="truncate">{seat.pseudonym}</span>
-          </button>
-        ))}
+      <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-labelledby="voto">
+        {candidates.map((seat) => {
+          const selected = mine?.target === seat.seatId;
+          return (
+            <button
+              key={seat.seatId}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              disabled={mine?.locked}
+              onClick={() => vote(seat.seatId)}
+              className={option(selected)}
+            >
+              <SeatAvatar avatar={seat.avatar} size={30} />
+              <span className="min-w-0 truncate">{seat.pseudonym}</span>
+            </button>
+          );
+        })}
         {settings.secretAiCount && (
           <button
             type="button"
@@ -67,19 +81,25 @@ export function VotePanel({ game }: { game: Game }) {
             aria-checked={mine?.target === NO_AI_VOTE}
             disabled={mine?.locked}
             onClick={() => vote(NO_AI_VOTE)}
-            className={`col-span-2 rounded-xl border px-3 py-2 text-sm ${mine?.target === NO_AI_VOTE ? 'border-amber bg-amber/10' : 'border-line bg-ink'}`}
+            className={`col-span-2 justify-center ${option(mine?.target === NO_AI_VOTE)}`}
           >
             Não tem IA nenhuma
           </button>
         )}
       </div>
-      <ErrorText>{error}</ErrorText>
+      <div className="mt-2">
+        <ErrorText>{error}</ErrorText>
+      </div>
       {settings.voteLock && mine && !mine.locked && (
-        <Button variant="amber" className="mt-3 w-full" onClick={lock}>
+        <Button variant="amber" className="mt-2 w-full" onClick={lock}>
           Travar voto (quanto antes, mais pontos)
         </Button>
       )}
-      {mine?.locked && <p className="mt-3 text-center text-sm text-amber">Voto travado.</p>}
+      {mine?.locked && (
+        <p className="mt-2 text-center text-sm font-semibold text-amber">
+          Voto travado. Agora é com os outros.
+        </p>
+      )}
     </div>
   );
 }

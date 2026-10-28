@@ -57,7 +57,10 @@ export interface MatchView {
   id: string;
   number: number;
   phase: MatchPhase;
+  /** null quando não há prazo ou quando ele não pode ser mostrado a este jogador. */
   phaseEndsAt: string | null;
+  /** Duração planejada da fase, para a barra de tempo. */
+  phaseDurationMs: number | null;
   /** "spectator": entrou na sala com a partida em andamento; joga a próxima. */
   role: 'player' | 'master' | 'spectator';
   /** Lugar do próprio jogador no chat. Para o Mestre é null: o lugar dele é da IA. */
@@ -86,7 +89,8 @@ export interface RoomStateView {
   serverTime: string;
 }
 
-export type MessageKind = 'chat' | 'system' | 'flash';
+/** "theme" é o tema da rodada: o chat ao vivo mostra fixado no topo, não como balão. */
+export type MessageKind = 'chat' | 'system' | 'theme' | 'flash';
 
 export interface ChatMessageView {
   id: string;

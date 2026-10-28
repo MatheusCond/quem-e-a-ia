@@ -28,7 +28,7 @@ export function RoomScreen({
   if (!game.room) {
     return (
       <div className="flex h-dvh items-center justify-center text-muted">
-        Entrando na sala {code}...
+        Entrando na sala {code}…
       </div>
     );
   }
@@ -46,13 +46,16 @@ export function RoomScreen({
   }
 
   return (
-    <div className="mx-auto flex h-dvh max-w-lg flex-col overflow-hidden bg-ink sm:border-x sm:border-line">
+    // relative + overflow-clip: elementos com position absolute (como os textos sr-only)
+    // ficam presos ao app, e nem um scrollIntoView consegue rolar o documento e
+    // esconder o cabeçalho. Cada área rolável interna também é relative.
+    <div className="relative mx-auto flex h-dvh max-w-lg flex-col overflow-clip bg-ink sm:border-x sm:border-line">
       {game.status !== 'online' && (
         <div
           role="status"
           className="bg-amber px-4 py-1.5 text-center text-sm font-semibold text-ink"
         >
-          Conexão caiu. Reconectando...
+          Conexão caiu. Reconectando…
         </div>
       )}
       {screen}

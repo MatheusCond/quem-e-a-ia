@@ -50,7 +50,8 @@ estado completo:
   servidor);
 - com o número de IAs secreto, a view esconde quantos jogadores podem votar e a
   votação não encerra antes do prazo, porque os dois entregariam quantos Mestres
-  existem.
+  existem. Pelo mesmo motivo, na fase de criação o cronômetro só aparece para o
+  Mestre (`GameMatch.deadlineVisibleTo`).
 
 ## Como os timers funcionam (e o limite deles)
 
@@ -190,3 +191,21 @@ Problemas que aconteceram de verdade durante a construção, em ordem.
     o efeito duas vezes e fecha a primeira conexão antes de ela abrir ("WebSocket is
     closed before the connection is established"). É só no `npm run dev`; o build
     de produção não tem o aviso.
+
+Os próximos apareceram na revisão do front-end com as Web Interface Guidelines
+(skill `web-design-guidelines`):
+
+11. **O cronômetro da criação entregava "zero IAs".** Sem Mestre, a criação termina
+    num momento aleatório, mas o prazo ia para todos os navegadores: com 2 minutos
+    configurados e o relógio mostrando 0:52, dava para deduzir que não havia IA. A
+    view passou a mandar o prazo da criação só para o Mestre quando o número de IAs
+    é secreto. Há teste no domínio.
+12. **A tela inteira "subia" ao abrir o replay da revelação.** Duas causas juntas:
+    as áreas roláveis eram `flex-1 overflow-y-auto` sem `min-h-0`, então cresciam
+    até o tamanho do conteúdo; e os textos para leitor de tela (`sr-only`, com
+    `position: absolute`) ficavam posicionados em relação à página, esticando o
+    documento. O contêiner do app e as áreas roláveis viraram `relative`, com
+    `min-h-0`.
+13. **Dois contornos de foco nos campos.** O estilo global de `:focus-visible` estava
+    fora das layers do Tailwind e ganhava do `outline-none` dos campos, que têm anel
+    próprio. Foi movido para `@layer base`.

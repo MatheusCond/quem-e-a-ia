@@ -72,7 +72,7 @@ export const GAME_RULES = {
 /** Descrição curta de cada mecânica, usada na tela de configurações. */
 export const TOGGLE_DESCRIPTIONS: Record<RoomToggle, { title: string; description: string }> = {
   typingAndDelay: {
-    title: '"Digitando..." e atraso realista',
+    title: '“Digitando…” e atraso realista',
     description:
       'A IA demora de acordo com o tamanho da mensagem e humanos ganham um pequeno atraso.',
   },
@@ -86,7 +86,7 @@ export const TOGGLE_DESCRIPTIONS: Record<RoomToggle, { title: string; descriptio
   },
   secretAiCount: {
     title: 'Número secreto de IAs',
-    description: 'Pode ter 0, 1 ou 2 IAs. "Não tem IA" vira uma resposta possível.',
+    description: 'Pode ter 0, 1 ou 2 IAs. “Não tem IA” vira uma resposta possível.',
   },
   voteLock: {
     title: 'Voto travado',
