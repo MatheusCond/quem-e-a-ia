@@ -1,0 +1,9 @@
+**/node_modules
+**/dist
+**/coverage
+.git
+.env
+.env.*
+legacy
+docs
+load-test/results

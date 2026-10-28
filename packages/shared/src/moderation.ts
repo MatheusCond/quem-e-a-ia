@@ -45,7 +45,7 @@ export function normalizeForModeration(text: string): string {
   return text
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[013457@$]/g, (char) => LEET[char] ?? char)
     .replace(/[^a-z\s]/g, ' ')
     .replace(/([a-z])\1+/g, '$1')

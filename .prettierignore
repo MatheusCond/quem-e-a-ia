@@ -5,3 +5,4 @@ legacy/
 package-lock.json
 apps/*/src/migrations/
 *.md
+.dockerignore

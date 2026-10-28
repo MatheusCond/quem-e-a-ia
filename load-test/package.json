@@ -1,0 +1,19 @@
+{
+  "name": "@quem/load-test",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simula salas com jogadores robôs para medir a API em tempo real.",
+  "scripts": {
+    "start": "tsx src/run.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@quem/shared": "1.0.0",
+    "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "tsx": "^4.20.6",
+    "typescript": "~5.9.3"
+  }
+}
