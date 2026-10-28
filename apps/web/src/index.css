@@ -118,10 +118,10 @@ h2 {
   border-radius: 6px 14px 8px 16px;
   background: linear-gradient(
     100deg,
-    rgb(245 181 63 / 0.1),
-    rgb(245 181 63 / 0.34) 8%,
-    rgb(245 181 63 / 0.26) 92%,
-    rgb(245 181 63 / 0.4)
+    rgb(245 181 63 / 0.06),
+    rgb(245 181 63 / 0.22) 8%,
+    rgb(245 181 63 / 0.17) 92%,
+    rgb(245 181 63 / 0.28)
   );
   transform: scaleX(0);
   transform-origin: left center;
