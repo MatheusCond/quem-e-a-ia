@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "description": "Jogo multiplayer em tempo real: descubra qual participante do chat é uma IA.",
-  "license": "MIT",
   "engines": {
     "node": ">=22"
   },
