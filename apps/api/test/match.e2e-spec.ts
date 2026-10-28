@@ -216,6 +216,31 @@ describe('Full match (e2e)', () => {
     );
   });
 
+  it('gives a player who dropped the same seat, state and chat back on reconnect', async () => {
+    const { players, master, humans } = await startAndSplit(['Ana', 'Beto', 'Caio']);
+    await writePersona(master, players);
+    const [dropper, other] = humans;
+    const seatBefore = dropper.match!.mySeatId;
+    await other.emit('chat:send', { text: 'alguém aí?' });
+    await dropper.waitFor((c) => c.messages.some((m) => m.text === 'alguém aí?'), 'mensagem');
+
+    dropper.close();
+    await other.waitFor(
+      (c) => c.state?.players.find((p) => p.id === dropper.playerId)?.connected === false,
+      'jogador offline',
+    );
+
+    const back = await PlayerClient.connect(ctx, dropper.joined);
+    clients.push(back);
+    await back.waitFor((c) => c.match?.phase === 'conversation', 'estado de volta');
+    await back.waitFor(
+      (c) => c.messages.some((m) => m.text === 'alguém aí?'),
+      'histórico de volta',
+    );
+    expect(back.match!.mySeatId).toBe(seatBefore);
+    expect((await back.emit('chat:send', { text: 'voltei' })).ok).toBe(true);
+  });
+
   it('puts late arrivals in the audience until the next match', async () => {
     const { players } = await startAndSplit(['Ana', 'Beto', 'Caio']);
     const late = await joinRoom(ctx, players[0].state!.code, 'Eva');
