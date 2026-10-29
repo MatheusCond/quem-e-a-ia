@@ -223,3 +223,10 @@ Os próximos apareceram na revisão do front-end com as Web Interface Guidelines
     sobrevivia e a migração falhava com "relation already exists" no arquivo de
     teste seguinte. A tabela ganhou um `EntitySchema`, e o armazenamento passou a
     usar o próprio ORM (`upsert` e `findOne`) em vez de SQL solto.
+15. **Duas abas do mesmo navegador viravam o mesmo jogador.** No primeiro teste no
+    Render, com quatro abas, ninguém viu a tela do Mestre. O token ficava só no
+    `localStorage`, que todas as abas do navegador compartilham: quem abria o link
+    numa aba nova entrava sem perguntar como o criador da sala. O servidor sorteava
+    o Mestre certo, mas a aba que deveria mostrar a tela dele era a de outra
+    pessoa. Agora a identidade da aba fica no `sessionStorage`, e o `localStorage`
+    só serve para oferecer "Voltar para a sala" a quem fechou a aba.

@@ -219,7 +219,9 @@ tabela traria joins sem ganho. O custo é não ter índice nem constraint dentro
 JSON.
 
 **17. Como o jogador volta depois de cair?**
-O JWT (`playerId`, `roomId`) fica no `localStorage`. O Socket.IO reconecta sozinho;
+O JWT (`playerId`, `roomId`) fica no `sessionStorage` (a identidade da aba, que
+sobrevive a recarregar) e no `localStorage` (para oferecer "Voltar para a sala" a
+quem fechou a aba). O Socket.IO reconecta sozinho;
 na conexão, a API manda de novo o estado e o histórico (`sendSnapshotTo`). O lugar é
 o mesmo, porque o seat é do `playerId`. Há um teste ponta a ponta disso.
 

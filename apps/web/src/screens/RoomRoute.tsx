@@ -3,12 +3,13 @@ import { Link, useParams } from 'react-router-dom';
 import { RoomCode } from '../components/RoomCode';
 import { Button, ErrorText, TextInput } from '../components/ui';
 import { api, ApiError, type RoomSummary } from '../lib/api';
-import { clearToken, loadToken, saveToken } from '../lib/session';
+import { clearToken, loadPreviousToken, loadToken, saveToken } from '../lib/session';
 import { RoomScreen } from './RoomScreen';
 
 /**
- * Rota /sala/:code. Quem já tem token desta sala entra direto (inclusive
- * depois de cair); quem chegou pelo link do WhatsApp escolhe um apelido.
+ * Rota /sala/:code. A aba que já está na sala entra direto (inclusive depois
+ * de recarregar ou cair); quem chegou pelo link do WhatsApp escolhe um apelido
+ * ou volta para a sessão anterior deste navegador.
  */
 export function RoomRoute() {
   const code = (useParams().code ?? '').toUpperCase();
@@ -41,6 +42,7 @@ function JoinForm({
   onJoined: (token: string) => void;
 }) {
   const [summary, setSummary] = useState<RoomSummary | null>(null);
+  const [previous] = useState(() => loadPreviousToken(code));
   const [missing, setMissing] = useState('');
   const [nickname, setNickname] = useState('');
   const [photo, setPhoto] = useState<File | null>(null);
@@ -102,6 +104,26 @@ function JoinForm({
           : 'Procurando a sala…'}
       </p>
       {notice && <p className="mt-4 rounded-xl bg-raised p-3 text-sm">{notice}</p>}
+
+      {previous && !notice && (
+        <div className="mt-6 rounded-xl bg-raised p-4">
+          <p className="text-sm text-muted">Você já estava nesta sala neste navegador.</p>
+          <Button
+            type="button"
+            variant="secondary"
+            className="mt-3 w-full"
+            onClick={() => {
+              saveToken(code, previous);
+              onJoined(previous);
+            }}
+          >
+            Voltar para a sala
+          </Button>
+          <p className="mt-3 text-sm text-muted">
+            Ou entre como outra pessoa, com um apelido novo:
+          </p>
+        </div>
+      )}
 
       <form onSubmit={join} className="mt-8 space-y-5">
         <label className="block">
