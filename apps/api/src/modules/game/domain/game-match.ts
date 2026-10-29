@@ -57,6 +57,8 @@ export class GameMatch {
     roomId: string;
     number: number;
     playerIds: string[];
+    /** Nomes que os jogadores escolheram para o chat (por playerId). */
+    chatNames?: ReadonlyMap<string, string>;
     settings: RoomSettings;
     now: Date;
     random: Random;
@@ -76,7 +78,7 @@ export class GameMatch {
     match.phase = 'lobby';
     match.phaseEndsAt = null;
     match.settings = { ...settings };
-    match.seats = drawSeats(playerIds, settings, random);
+    match.seats = drawSeats(playerIds, settings, random, params.chatNames);
     match.aiCount = match.masterSeats().length;
     match.theme = null;
     match.flash = null;

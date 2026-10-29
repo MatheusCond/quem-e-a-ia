@@ -16,7 +16,7 @@ import { Scheduler } from '../../../infrastructure/scheduler';
 import { GameError } from '../../../shared/game-error';
 import { pickOne, Random, RANDOM } from '../../../shared/random';
 import { AuthPlayer } from '../../auth/player-token.service';
-import { Player } from '../../rooms/domain/player';
+import { normalizeChatName, Player } from '../../rooms/domain/player';
 import { Room } from '../../rooms/domain/room';
 import { ChatMessage } from '../domain/chat-message';
 import { FLASH_QUESTIONS } from '../domain/content';
@@ -80,6 +80,25 @@ export class MatchService implements OnApplicationBootstrap {
     });
   }
 
+  /** Nome que o jogador usa no chat das próximas partidas. Vazio volta ao sorteio. */
+  async setChatName(auth: AuthPlayer, input: unknown): Promise<void> {
+    const name = normalizeChatName(String(input ?? ''));
+    await this.tx.run(auth.roomId, async (em) => {
+      const players = await em.find(Player, { roomId: auth.roomId });
+      const me = players.find((p) => p.id === auth.playerId);
+      if (!me) throw new GameError('UNAUTHORIZED', 'Jogador não encontrado nesta sala.');
+      const taken = players.some(
+        (p) => p.id !== me.id && name && p.chatName?.toLowerCase() === name.toLowerCase(),
+      );
+      if (taken) {
+        throw new GameError('VALIDATION', 'Alguém da sala já escolheu esse nome. Tente outro.');
+      }
+      me.chatName = name;
+      await em.flush();
+      await this.presenter.broadcast(em, auth.roomId);
+    });
+  }
+
   async startMatch(auth: AuthPlayer): Promise<void> {
     await this.tx.run(auth.roomId, async (em) => {
       const room = await em.findOneOrFail(Room, { id: auth.roomId });
@@ -96,10 +115,14 @@ export class MatchService implements OnApplicationBootstrap {
       const online = this.realtime.connectedPlayerIds(room.id);
       const players = await em.find(Player, { roomId: room.id }, { orderBy: { joinedAt: 'asc' } });
 
+      const playing = players.filter((p) => online.has(p.id));
       const match = GameMatch.start({
         roomId: room.id,
         number: (current?.number ?? 0) + 1,
-        playerIds: players.filter((p) => online.has(p.id)).map((p) => p.id),
+        playerIds: playing.map((p) => p.id),
+        chatNames: new Map(
+          playing.flatMap((p) => (p.chatName ? [[p.id, p.chatName] as const] : [])),
+        ),
         settings: room.settings,
         now: new Date(),
         random: this.random,

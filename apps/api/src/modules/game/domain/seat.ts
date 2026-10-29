@@ -66,21 +66,32 @@ export function decideAiCount(playerCount: number, settings: RoomSettings, rando
 
 /**
  * Sorteia, em segredo, quem é Mestre e qual pseudônimo/avatar cada um usa.
- * A ordem dos lugares também é embaralhada, para a posição na lista não
- * entregar ninguém.
+ * Quem escolheu um nome para o chat usa esse nome (e, se for Mestre, a IA
+ * fala com ele). A ordem dos lugares também é embaralhada, para a posição na
+ * lista não entregar ninguém.
  */
-export function drawSeats(playerIds: string[], settings: RoomSettings, random: Random): Seat[] {
+export function drawSeats(
+  playerIds: string[],
+  settings: RoomSettings,
+  random: Random,
+  chatNames: ReadonlyMap<string, string> = new Map(),
+): Seat[] {
   const aiCount = decideAiCount(playerIds.length, settings, random);
   const masters = new Set(shuffle(playerIds, random).slice(0, aiCount));
   // Embaralhar e usar por índice garante nomes, emojis e cores sem repetição.
-  const pseudonyms = shuffle(PSEUDONYMS, random);
+  // Os sorteados não podem coincidir com um nome escolhido.
+  const chosen = new Set([...chatNames.values()].map((name) => name.toLowerCase()));
+  const pseudonyms = shuffle(
+    PSEUDONYMS.filter((name) => !chosen.has(name.toLowerCase())),
+    random,
+  );
   const emojis = shuffle(AVATAR_EMOJIS, random);
   const colors = shuffle(AVATAR_COLORS, random);
 
   const seats = playerIds.map((playerId, index): Seat => ({
     id: randomUUID(),
     playerId,
-    pseudonym: pseudonyms[index % pseudonyms.length],
+    pseudonym: chatNames.get(playerId) ?? pseudonyms[index % pseudonyms.length],
     avatar: { emoji: emojis[index % emojis.length], color: colors[index % colors.length] },
     role: masters.has(playerId) ? 'master' : 'player',
     lastMessageAt: null,

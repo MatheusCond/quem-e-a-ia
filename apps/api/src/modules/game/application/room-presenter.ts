@@ -82,7 +82,7 @@ export class RoomPresenter {
         totalScore: p.totalScore,
         isHost: room.isHost(p.id),
       })),
-      me: { playerId, nickname: me?.nickname ?? '' },
+      me: { playerId, nickname: me?.nickname ?? '', chatName: me?.chatName ?? null },
       match: match ? matchView(match, players, playerId, now) : null,
       serverTime: now.toISOString(),
     };

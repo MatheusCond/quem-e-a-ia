@@ -32,6 +32,7 @@ export const PlayerSchema = new EntitySchema<Player>({
     id: { type: 'uuid', primary: true },
     roomId: { type: 'uuid' },
     nickname: { type: 'string', length: 40 },
+    chatName: { type: 'string', length: 40, nullable: true },
     avatarKey: { type: 'string', length: 120, nullable: true },
     totalScore: { type: 'integer', default: 0 },
     joinedAt: { type: 'datetime' },

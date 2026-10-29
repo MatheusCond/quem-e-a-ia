@@ -19,6 +19,25 @@ function startMatch(settings: Partial<RoomSettings> = {}, players = PLAYERS, see
   });
 }
 
+describe('chat names', () => {
+  it('uses the chosen name and draws the rest without repeating it', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const match = GameMatch.start({
+        roomId: 'room-1',
+        number: 1,
+        playerIds: PLAYERS,
+        chatNames: new Map([['ana', 'Aninha']]),
+        settings: DEFAULT_ROOM_SETTINGS,
+        now: T0,
+        random: seededRandom(seed),
+      });
+      const seats = new Map(match.seats.map((s) => [s.playerId, s.pseudonym]));
+      expect(seats.get('ana')).toBe('Aninha');
+      expect(new Set(seats.values()).size).toBe(PLAYERS.length);
+    }
+  });
+});
+
 function masterOf(match: GameMatch) {
   return match.masterSeats()[0];
 }

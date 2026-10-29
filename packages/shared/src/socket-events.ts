@@ -20,6 +20,8 @@ export interface CreationPayload {
 
 export interface ClientToServerEvents {
   'room:settings': (settings: Partial<RoomSettings>, ack: Ack) => void;
+  /** Nome no chat das próximas partidas; texto vazio volta ao sorteio. */
+  'player:chat-name': (payload: { name: string }, ack: Ack) => void;
   'match:start': (ack: Ack) => void;
   'creation:submit': (payload: CreationPayload, ack: Ack) => void;
   'chat:send': (payload: { text: string }, ack: Ack) => void;

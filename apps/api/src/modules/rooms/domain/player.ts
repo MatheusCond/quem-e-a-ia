@@ -19,11 +19,29 @@ export function normalizeNickname(input: string): string {
   return nickname;
 }
 
+/** Nome escolhido para o chat. Vazio volta ao sorteio. */
+export function normalizeChatName(input: string): string | null {
+  const name = input.replace(/\s+/g, ' ').trim();
+  if (name.length === 0) return null;
+  if (name.length > GAME_RULES.maxNicknameChars) {
+    throw new GameError(
+      'VALIDATION',
+      `O nome no chat pode ter até ${GAME_RULES.maxNicknameChars} caracteres.`,
+    );
+  }
+  if (findBlockedTerm(name)) {
+    throw new GameError('BLOCKED_CONTENT', 'Esse nome não é permitido.');
+  }
+  return name;
+}
+
 /** Um amigo dentro de uma sala. A pontuação acumula entre as partidas. */
 export class Player {
   id: string;
   roomId: string;
   nickname: string;
+  /** Nome usado no chat das próximas partidas; null sorteia um pseudônimo. */
+  chatName: string | null;
   avatarKey: string | null;
   totalScore: number;
   joinedAt: Date;
@@ -33,6 +51,7 @@ export class Player {
     player.id = randomUUID();
     player.roomId = roomId;
     player.nickname = normalizeNickname(nickname);
+    player.chatName = null;
     player.avatarKey = null;
     player.totalScore = 0;
     player.joinedAt = now;

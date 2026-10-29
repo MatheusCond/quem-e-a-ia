@@ -1,10 +1,10 @@
 import { GAME_RULES, type RoomToggle, TOGGLE_DESCRIPTIONS } from '@quem/shared';
-import { useRef, useState } from 'react';
+import { type FormEvent, useRef, useState } from 'react';
 import { PlayerAvatar } from '../components/avatars';
 import { RoomCode } from '../components/RoomCode';
 import { SettingsPanel } from '../components/SettingsPanel';
 import { TopBar } from '../components/TopBar';
-import { Button, ErrorText, SrOnly } from '../components/ui';
+import { Button, ErrorText, SrOnly, TextInput } from '../components/ui';
 import { api, ApiError } from '../lib/api';
 import { loadToken, readFlag, writeFlag } from '../lib/session';
 import { copyRoomLink, whatsappShareUrl } from '../lib/share';
@@ -164,6 +164,8 @@ export function Lobby({ game }: { game: Game }) {
           </ul>
         </section>
 
+        <ChatNameForm game={game} />
+
         <details className="group mt-6 rounded-3xl bg-night" open={isHost}>
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-3xl p-5 hover:bg-raised/40 [&::-webkit-details-marker]:hidden">
             <span>
@@ -219,5 +221,64 @@ function ShareIcon() {
         strokeLinejoin="round"
       />
     </svg>
+  );
+}
+
+/**
+ * O nome que aparece no chat. Vazio, o jogo sorteia um pseudônimo. Só o próprio
+ * jogador vê o que escolheu; os outros descobrem quando a conversa começa.
+ */
+function ChatNameForm({ game }: { game: Game }) {
+  const saved = game.room!.me.chatName ?? '';
+  const [name, setName] = useState(saved);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState<string | null>(null);
+  const changed = name.trim() !== saved;
+
+  async function save(event: FormEvent) {
+    event.preventDefault();
+    setError('');
+    setDone(null);
+    setBusy(true);
+    const result = await game.send('player:chat-name', { name });
+    setBusy(false);
+    if (result.ok) setDone(name.replace(/\s+/g, ' ').trim());
+    else setError(result.error.message);
+  }
+
+  return (
+    <form onSubmit={save} className="mt-6 rounded-3xl bg-night p-5">
+      <label htmlFor="chat-name" className="block font-display text-xl font-bold">
+        Seu nome no chat
+      </label>
+      <p className="mt-1 text-sm text-muted">
+        Vale para a próxima partida. Se deixar vazio, o jogo sorteia um nome.
+      </p>
+      <div className="mt-3 flex gap-2">
+        <TextInput
+          id="chat-name"
+          name="chatName"
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            setDone(null);
+          }}
+          maxLength={GAME_RULES.maxNicknameChars}
+          placeholder="Nome sorteado…"
+          autoComplete="off"
+          spellCheck={false}
+          className="min-w-0 flex-1"
+        />
+        <Button type="submit" variant="secondary" disabled={busy || !changed}>
+          {busy ? 'Salvando…' : 'Salvar'}
+        </Button>
+      </div>
+      <p className="mt-2 text-sm text-mint" aria-live="polite">
+        {done !== null &&
+          (done ? `No chat você vai aparecer como “${done}”.` : 'Seu nome será sorteado.')}
+      </p>
+      <ErrorText>{error}</ErrorText>
+    </form>
   );
 }

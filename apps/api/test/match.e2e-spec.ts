@@ -86,6 +86,29 @@ describe('Full match (e2e)', () => {
     );
   }
 
+  it('uses the chat name each player chose, kept private until the chat', async () => {
+    const players = await roomWithPlayers(['Ana', 'Beto', 'Caio']);
+    expect((await players[0].emit('player:chat-name', { name: '  Ana  de Verdade ' })).ok).toBe(
+      true,
+    );
+    expect(await players[1].emit('player:chat-name', { name: 'ana de verdade' })).toMatchObject({
+      ok: false,
+      error: { code: 'VALIDATION' },
+    });
+    await players[0].waitFor((c) => c.state?.me.chatName === 'Ana de Verdade', 'nome salvo');
+    expect(players[1].state!.me.chatName).toBeNull();
+
+    expect((await players[0].emit('match:start')).ok).toBe(true);
+    await Promise.all(
+      players.map((p) => p.waitFor((c) => c.match?.phase === 'creation', 'fase de criação')),
+    );
+    const master = players.find((p) => p.match!.role === 'master')!;
+    await writePersona(master, players);
+    const pseudonyms = players[1].match!.seats.map((s) => s.pseudonym);
+    expect(pseudonyms).toContain('Ana de Verdade');
+    expect(new Set(pseudonyms).size).toBe(3);
+  });
+
   it('plays a whole match: creation, chat with the AI, voting, reveal and ranking', async () => {
     const { players, master, humans } = await startAndSplit();
 

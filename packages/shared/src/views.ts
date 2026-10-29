@@ -84,7 +84,8 @@ export interface RoomStateView {
   hostPlayerId: string;
   settings: RoomSettings;
   players: PlayerView[];
-  me: { playerId: string; nickname: string };
+  /** chatName só aparece para o próprio jogador: os outros descobrem no chat. */
+  me: { playerId: string; nickname: string; chatName: string | null };
   match: MatchView | null;
   serverTime: string;
 }

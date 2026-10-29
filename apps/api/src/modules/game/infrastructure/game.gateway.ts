@@ -110,6 +110,11 @@ export class GameGateway
     return this.respond(socket, () => this.matches.updateSettings(socket.data.auth, body));
   }
 
+  @SubscribeMessage('player:chat-name')
+  chatName(@ConnectedSocket() socket: GameSocket, @MessageBody() body: { name?: unknown }) {
+    return this.respond(socket, () => this.matches.setChatName(socket.data.auth, body?.name));
+  }
+
   @SubscribeMessage('match:start')
   start(@ConnectedSocket() socket: GameSocket) {
     return this.respond(socket, () => this.matches.startMatch(socket.data.auth));
