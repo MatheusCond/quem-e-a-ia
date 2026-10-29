@@ -167,8 +167,8 @@ npm run lint
 ```
 
 Todos os testes usam o `FakeLlmProvider` ou um barramento em memória: nenhum
-depende de rede nem gasta cota. Na última execução: 95 testes unitários
-(shared 8, cloud 8, api 49, worker 30) e 16 ponta a ponta. A CI
+depende de rede nem gasta cota. Na última execução: 97 testes unitários
+(shared 8, cloud 8, api 51, worker 30) e 19 ponta a ponta. A CI
 (`.github/workflows/ci.yml`) roda lint, formatação, tipos, testes e o build das
 imagens Docker (as três do compose e a do modo processo único).
 
