@@ -13,7 +13,7 @@ import { BudgetService } from '../../usage/application/budget.service';
 import { breaksCharacter } from '../domain/character-check';
 import { buildPrompt, cleanReply } from '../domain/prompt-builder';
 import { decideReply, Random } from '../domain/reply-decision';
-import { LlmProvider, LlmQuotaError } from '../infrastructure/llm/llm-provider';
+import { LlmConfigError, LlmProvider, LlmQuotaError } from '../infrastructure/llm/llm-provider';
 import { createOwnKeyProvider } from '../infrastructure/llm/llm-provider.factory';
 
 /**
@@ -70,6 +70,12 @@ export class AiTurnHandler {
         // Com a chave do Mestre, a cota estourada é dele: não desliga o servidor.
         if (!ownKey) await this.budget.tripForQuota();
         await this.publishUnavailable(event.matchId, 'provider-quota');
+        return false;
+      }
+      if (error instanceof LlmConfigError) {
+        // Chave ou modelo errado: avisar a sala é melhor que a IA ficar muda.
+        this.logger.error(`LLM sem acesso (${provider.name}): ${error.message}`);
+        await this.publishUnavailable(event.matchId, 'provider-error');
         return false;
       }
       // Erro pontual (rede, timeout): perde só esta resposta.

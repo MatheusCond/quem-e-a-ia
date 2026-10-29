@@ -67,7 +67,7 @@ export async function loadWorkerConfig(
     llm: {
       provider: parseProvider(env.LLM_PROVIDER),
       geminiApiKey: secrets.GEMINI_API_KEY ?? null,
-      geminiModel: env.GEMINI_MODEL || 'gemini-2.5-flash-lite',
+      geminiModel: env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
       ollamaUrl: env.OLLAMA_URL || 'http://localhost:11434',
       ollamaModel: env.OLLAMA_MODEL || 'qwen2.5:1.5b',
       timeoutMs: intFrom(env.LLM_TIMEOUT_MS, 20_000),

@@ -1,5 +1,6 @@
 import {
   fetchWithTimeout,
+  LlmConfigError,
   LlmProvider,
   LlmQuotaError,
   LlmRequest,
@@ -8,6 +9,18 @@ import {
 } from './llm-provider';
 
 const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
+
+/** Erros que não passam tentando de novo: chave, modelo ou permissão. */
+const CONFIG_ERRORS = new Set([400, 401, 403, 404]);
+
+/**
+ * Sem "pensamento": a resposta é curta e cada token de raciocínio custa cota.
+ * A família 2.5 desliga com thinkingBudget 0; nos modelos 3.x o padrão do
+ * Flash-Lite já é o nível mínimo, e o campo antigo não é garantido.
+ */
+function thinkingConfig(model: string) {
+  return model.startsWith('gemini-2.5') ? { thinkingConfig: { thinkingBudget: 0 } } : {};
+}
 
 interface GeminiResponse {
   candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
@@ -43,8 +56,7 @@ export class GeminiProvider extends LlmProvider {
           generationConfig: {
             maxOutputTokens: request.maxOutputTokens,
             temperature: 1,
-            // Sem "pensamento": a resposta é curta e cada token de raciocínio custa cota.
-            thinkingConfig: { thinkingBudget: 0 },
+            ...thinkingConfig(this.model),
           },
         }),
       },
@@ -52,6 +64,11 @@ export class GeminiProvider extends LlmProvider {
     );
 
     if (response.status === 429) throw new LlmQuotaError();
+    if (CONFIG_ERRORS.has(response.status)) {
+      throw new LlmConfigError(
+        `Gemini respondeu HTTP ${response.status}: confira GEMINI_API_KEY e GEMINI_MODEL (${this.model})`,
+      );
+    }
     if (!response.ok) {
       // Só o status: o corpo do erro pode repetir dados da requisição.
       throw new LlmRequestError(`Gemini respondeu HTTP ${response.status}`);

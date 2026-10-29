@@ -32,6 +32,17 @@ export class LlmQuotaError extends Error {
   }
 }
 
+/**
+ * HTTP 400, 401, 403 ou 404: chave inválida, modelo inexistente ou sem acesso.
+ * Não passa sozinho, então a partida avisa em vez de a IA ficar muda.
+ */
+export class LlmConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'LlmConfigError';
+  }
+}
+
 export class LlmRequestError extends Error {
   constructor(message: string) {
     super(message);

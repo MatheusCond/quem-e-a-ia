@@ -137,9 +137,10 @@ Passo a passo e o que muda em cada modo: [docs/HOSPEDAGEM.md](docs/HOSPEDAGEM.md
    Secrets Manager do LocalStack e o worker lê de lá. Ela nunca chega ao navegador.
 4. `docker compose up --build`.
 
-O modelo padrão é `gemini-2.5-flash-lite` (está no nível gratuito segundo a
+O modelo padrão é `gemini-3.5-flash-lite` (está no nível gratuito segundo a
 [tabela de preços](https://ai.google.dev/gemini-api/docs/pricing)). Dá para trocar
-em `GEMINI_MODEL`.
+em `GEMINI_MODEL`. O `gemini-2.5-flash-lite` só funciona para quem já o usava antes:
+com uma chave nova, ele responde erro.
 
 **Privacidade:** no nível gratuito, o Google informa que os dados enviados podem ser
 usados para melhorar os produtos dele. O lobby avisa isso aos jogadores.
@@ -164,8 +165,8 @@ npm run lint
 ```
 
 Todos os testes usam o `FakeLlmProvider` ou um barramento em memória: nenhum
-depende de rede nem gasta cota. Na última execução: 94 testes unitários
-(shared 8, cloud 8, api 49, worker 29) e 16 ponta a ponta. A CI
+depende de rede nem gasta cota. Na última execução: 95 testes unitários
+(shared 8, cloud 8, api 49, worker 30) e 16 ponta a ponta. A CI
 (`.github/workflows/ci.yml`) roda lint, formatação, tipos, testes e o build das
 imagens Docker (as três do compose e a do modo processo único).
 

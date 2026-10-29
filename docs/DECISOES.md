@@ -230,3 +230,11 @@ Os próximos apareceram na revisão do front-end com as Web Interface Guidelines
     o Mestre certo, mas a aba que deveria mostrar a tela dele era a de outra
     pessoa. Agora a identidade da aba fica no `sessionStorage`, e o `localStorage`
     só serve para oferecer "Voltar para a sala" a quem fechou a aba.
+16. **A IA ficava muda no Render.** O modelo padrão era o `gemini-2.5-flash-lite`,
+    que o Google passou a liberar só para quem já o usava; com uma chave nova, toda
+    chamada voltava com erro. O worker tratava qualquer erro que não fosse 429 como
+    falha pontual: registrava um aviso e perdia a resposta, sem nada na tela. O
+    padrão virou `gemini-3.5-flash-lite`, que já pensa no nível mínimo e por isso não
+    recebe o `thinkingBudget` da família 2.5. Erros 400, 401, 403 e 404 agora
+    encerram a conversa com o aviso de IA indisponível, como a falta de cota, mas
+    sem ligar o disjuntor do dia.

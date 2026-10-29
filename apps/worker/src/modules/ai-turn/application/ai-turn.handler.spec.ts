@@ -104,6 +104,29 @@ describe('AiTurnHandler', () => {
     expect((await repository.getDaily(usageDay(new Date()))).trippedAt).not.toBeNull();
   });
 
+  it('warns the room instead of going silent when the key or model is wrong', async () => {
+    const { handler, repository, cipher, published } = setup();
+    // Um modelo sem acesso responde 404; a chave do Mestre leva ao GeminiProvider real.
+    const fetchMock = jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(new Response('{}', { status: 404 }));
+    const event = turnEvent({
+      ...answerAll,
+      aiSeats: [aiSeat({ encryptedApiKey: cipher.encrypt('AIza-master-own-key-123') })],
+    });
+
+    await handler.handle(event);
+
+    expect(published()).toEqual([
+      { type: 'ai.unavailable', matchId: 'match-1', reason: 'provider-error' },
+    ]);
+    // Não é falta de cota: o disjuntor do dia continua desligado.
+    expect((await repository.getDaily(usageDay(new Date()))).trippedAt).toBeNull();
+    const [, init] = fetchMock.mock.calls[0];
+    expect(JSON.parse(init!.body as string).generationConfig.thinkingConfig).toBeUndefined();
+    fetchMock.mockRestore();
+  });
+
   it('skips the call entirely when the AI decides to stay quiet', async () => {
     const provider = new RecordingProvider();
     const { handler, bus } = setup(provider);
