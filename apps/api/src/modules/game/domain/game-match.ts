@@ -327,9 +327,14 @@ export class GameMatch {
     seat.vote.lockedAt = now.toISOString();
   }
 
-  /** Na votação, encerra antes do prazo quando todos votaram. */
-  allVotesIn(): boolean {
-    return this.phase === 'voting' && this.playerSeats().every((s) => s.vote !== null);
+  /**
+   * Na votação, encerra antes do prazo quando todos votaram. Com `online`,
+   * quem saiu da sala não segura a partida; precisa sobrar pelo menos um voto.
+   */
+  allVotesIn(online?: ReadonlySet<string>): boolean {
+    if (this.phase !== 'voting') return false;
+    const voters = this.playerSeats().filter((s) => !online || online.has(s.playerId));
+    return voters.length > 0 && voters.every((s) => s.vote !== null);
   }
 
   private assertValidTarget(voter: Seat, target: VoteTarget): void {

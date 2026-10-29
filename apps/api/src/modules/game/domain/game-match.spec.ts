@@ -278,6 +278,17 @@ describe('voting', () => {
     }
     expect(match.allVotesIn()).toBe(true);
   });
+
+  it('does not wait for players who left the room', () => {
+    const match = inConversation();
+    match.advance(at(300), seededRandom(1));
+    const [first] = humans(match);
+    match.castVote(first.playerId, masterOf(match).id, at(301));
+    expect(match.allVotesIn()).toBe(false);
+    expect(match.allVotesIn(new Set([first.playerId, masterOf(match).playerId]))).toBe(true);
+    // Sem nenhum votante na sala, quem decide é o prazo.
+    expect(match.allVotesIn(new Set())).toBe(false);
+  });
 });
 
 describe('full match', () => {

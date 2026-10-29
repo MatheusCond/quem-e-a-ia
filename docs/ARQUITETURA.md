@@ -174,7 +174,7 @@ stateDiagram-v2
   lobby --> creation: anfitrião começa
   creation --> conversation: prazo ou todos os Mestres prontos
   conversation --> voting: prazo ou IA indisponível
-  voting --> reveal: prazo ou todos votaram*
+  voting --> reveal: prazo ou todos na sala votaram*
   reveal --> [*]
 ```
 

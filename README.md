@@ -17,9 +17,11 @@ quem era.
 2. O servidor sorteia **em segredo** o Mestre da IA.
 3. **Criação:** o Mestre tem 2 minutos para escrever a personalidade da IA (gírias,
    erros de digitação, opiniões, piadas internas, estratégia). Os outros esperam.
-4. **Conversa:** todo mundo aparece com pseudônimo e avatar sorteados. No lugar do
-   Mestre, quem fala é a IA. O Mestre só assiste (e pode intervir 3 vezes).
-5. **Votação:** cada um vota em qual pseudônimo é a IA.
+4. **Conversa:** todo mundo aparece com pseudônimo e avatar sorteados (ou com o nome
+   que cada um escolheu na sala de espera). No lugar do Mestre, quem fala é a IA,
+   com o nome dele. O Mestre só assiste (e pode intervir 3 vezes).
+5. **Votação:** cada um vota em qual pseudônimo é a IA. Quando todos que estão na
+   sala votam, a revelação vem na hora, sem esperar o prazo.
 6. **Revelação:** quem era quem, as mensagens da IA marcadas, o prompt do Mestre e
    os pontos. O ranking da sala acumula entre as partidas.
 

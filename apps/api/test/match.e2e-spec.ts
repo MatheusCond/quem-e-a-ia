@@ -239,6 +239,40 @@ describe('Full match (e2e)', () => {
     );
   });
 
+  it('reveals as soon as everyone voted during the conversation (vote lock)', async () => {
+    const { players, master, humans } = await startAndSplit(['Ana', 'Beto', 'Caio'], {
+      ...FAST_SETTINGS,
+      voteLock: true,
+    });
+    await writePersona(master, players);
+    const aiSeatId = master.match!.master!.aiSeatId;
+    for (const human of humans) {
+      expect((await human.emit('vote:cast', { target: aiSeatId })).ok).toBe(true);
+    }
+    // A conversa ainda não acabou; quando acabar, a votação já está completa.
+    expect(humans[0].match!.phase).toBe('conversation');
+    await ctx.app.get(MatchService).forceAdvance(roomIdOf(master));
+    await Promise.all(
+      players.map((p) => p.waitFor((c) => c.match?.phase === 'reveal', 'revelação')),
+    );
+  });
+
+  it('reveals when the only player still to vote leaves the room', async () => {
+    const { players, master, humans } = await startAndSplit(['Ana', 'Beto', 'Caio', 'Duda']);
+    await writePersona(master, players);
+    await ctx.app.get(MatchService).forceAdvance(roomIdOf(master));
+    await Promise.all(players.map((p) => p.waitFor((c) => c.match?.phase === 'voting', 'votação')));
+
+    const [voterA, voterB, leaver] = humans;
+    const aiSeatId = master.match!.master!.aiSeatId;
+    expect((await voterA.emit('vote:cast', { target: aiSeatId })).ok).toBe(true);
+    expect((await voterB.emit('vote:cast', { target: aiSeatId })).ok).toBe(true);
+    expect(voterA.match!.phase).toBe('voting');
+
+    leaver.close();
+    await voterA.waitFor((c) => c.match?.phase === 'reveal', 'revelação sem esperar quem saiu');
+  });
+
   it('gives a player who dropped the same seat, state and chat back on reconnect', async () => {
     const { players, master, humans } = await startAndSplit(['Ana', 'Beto', 'Caio']);
     await writePersona(master, players);

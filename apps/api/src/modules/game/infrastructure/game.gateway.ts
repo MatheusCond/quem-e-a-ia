@@ -89,7 +89,7 @@ export class GameGateway
     if (!auth || this.shuttingDown) return;
     if (this.realtime.markOffline(auth.roomId, auth.playerId)) {
       await this.matches
-        .refreshRoom(auth.roomId)
+        .playerDisconnected(auth)
         .catch((error: Error) => this.logger.warn(`Falha ao atualizar sala: ${error.message}`));
     }
   }

@@ -181,18 +181,34 @@ export class MatchService implements OnApplicationBootstrap {
     });
   }
 
-  /**
-   * Fecha a votação antes do prazo quando todos votaram. Com o número de IAs
-   * secreto não fechamos: a votação acabar quando N-1 votaram entregaria
-   * quantos Mestres existem.
-   */
   private async afterVote(em: EntityManager, match: GameMatch): Promise<void> {
-    if (!match.settings.secretAiCount && match.allVotesIn()) {
+    if (this.votingIsDone(match)) {
       await this.advance(em, match);
     } else {
       await em.flush();
       await this.presenter.broadcast(em, match.roomId);
     }
+  }
+
+  /**
+   * A votação fecha antes do prazo quando todos que estão na sala votaram.
+   * Com o número de IAs secreto não fechamos: a votação acabar quando N-1
+   * votaram entregaria quantos Mestres existem.
+   */
+  private votingIsDone(match: GameMatch): boolean {
+    return (
+      !match.settings.secretAiCount &&
+      match.allVotesIn(this.realtime.connectedPlayerIds(match.roomId))
+    );
+  }
+
+  /** Quem saiu pode ser o único voto que faltava. */
+  async playerDisconnected(auth: AuthPlayer): Promise<void> {
+    await this.tx.run(auth.roomId, async (em) => {
+      const match = await findCurrentMatch(em, auth.roomId);
+      if (match && this.votingIsDone(match)) await this.advance(em, match);
+      else await this.presenter.broadcast(em, auth.roomId);
+    });
   }
 
   // ------------------------------------------------------------ IA fora do ar
@@ -244,6 +260,8 @@ export class MatchService implements OnApplicationBootstrap {
     if (phase === 'conversation') this.onConversationStart(em, match, now);
     if (phase === 'voting') this.scheduler.cancel(`flash:${match.id}`);
     await em.flush();
+    // Com o voto travado, todos podem ter votado ainda na conversa.
+    if (phase === 'voting' && this.votingIsDone(match)) return this.advance(em, match);
 
     if (phase === 'reveal') await this.onReveal(em, match);
     this.schedulePhaseEnd(match);
