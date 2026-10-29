@@ -89,7 +89,6 @@ packages/shared  contratos: tipos, eventos, configurações, moderação
 packages/cloud   SNS/SQS, barramento em memória, Secrets Manager, cifra de chave
 load-test      teste de carga e robôs para jogar sozinho
 infra          script que cria tópicos, filas, bucket e segredo no LocalStack
-legacy         app Flutter original do TCC
 ```
 
 ## Rodar com um comando
@@ -244,17 +243,14 @@ aumentado só para o teste (veja "Problemas encontrados" em DECISOES.md).
 
 ## A história do projeto
 
-Este repositório começou como o **AvatarGenius**, o app de avatares do meu TCC: um
-app Flutter que tirava uma selfie, pedia ao Gemini uma descrição da pessoa, gerava
-um avatar com o DALL-E 3 e criava um chatbot com a personalidade do avatar. Ele
-tinha problemas que eu aprendi a enxergar depois: chaves de API empacotadas no APK,
-dados só no aparelho, nenhum teste.
+A ideia veio do meu TCC, um app Flutter que criava um avatar a partir de uma selfie
+e um chatbot com a personalidade dele. Ele tinha problemas que eu aprendi a
+enxergar depois: chaves de API empacotadas no APK, dados só no aparelho, nenhum
+teste.
 
-"Quem é a IA?" pega a ideia que mais divertia no TCC (dar personalidade a uma IA) e
+"Quem é a IA?" pega a parte que mais divertia (dar personalidade a uma IA) e
 transforma num jogo social com backend de verdade: servidor autoritativo, eventos,
-filas, testes e segredos fora do cliente. O app original continua em
-[legacy/avatargenius-flutter](legacy/avatargenius-flutter), com o histórico do Git
-preservado.
+filas, testes e segredos fora do cliente. É um projeto novo, escrito do zero.
 
 ## Próximos passos
 

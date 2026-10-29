@@ -4,6 +4,5 @@
 .git
 .env
 .env.*
-legacy
 docs
 load-test/results

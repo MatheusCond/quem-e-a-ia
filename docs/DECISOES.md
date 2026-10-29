@@ -157,16 +157,17 @@ chamada ao LLM.
 
 Problemas que aconteceram de verdade durante a construção, em ordem.
 
-1. **O repositório não fazia checkout no Windows.** O arquivo perdido
-   `et --soft <commit-hash>` tem `<` e `>`, que o NTFS não aceita, e o `git clone`
-   terminava sem arquivos. Resolvi com sparse checkout excluindo esse caminho e
-   depois removendo o arquivo num commit.
-2. **Chaves do Firebase no histórico.** `lib/firebase_options.dart` e
-   `android/app/google-services.json` foram versionados com as chaves de API do
-   projeto Firebase desde o primeiro commit. Na cópia em `legacy/` elas viraram
-   placeholders, mas continuam no histórico. Ação necessária: desativar o projeto
-   Firebase ou restringir as chaves no Google Cloud Console. Nenhuma chave do
-   Gemini, da OpenAI ou arquivo `.env` foi encontrado no histórico.
+1. **O repositório antigo não fazia checkout no Windows.** O projeto começou no
+   repositório do app do TCC, que tinha um arquivo perdido `et --soft <commit-hash>`
+   com `<` e `>`, que o NTFS não aceita: o `git clone` terminava sem arquivos.
+   Resolvi com sparse checkout excluindo esse caminho e depois removendo o arquivo
+   num commit.
+2. **Chaves do Firebase no histórico antigo.** O app do TCC tinha as chaves de API
+   do Firebase versionadas desde o primeiro commit. Este repositório foi criado só
+   com os commits do jogo novo, sem o app antigo, então nenhuma dessas chaves está
+   aqui; procurei o padrão de chave do Google em todos os commits. As chaves ainda
+   existem no repositório antigo, e a ação necessária continua: desativar o projeto
+   Firebase ou restringir as chaves no Google Cloud Console.
 3. **LocalStack passou a exigir conta.** A imagem `localstack/localstack:latest`
    (versão 2026.10) encerra com "License activation failed" sem
    `LOCALSTACK_AUTH_TOKEN`. Testei versões anteriores e fixei a `4.14`, que sobe sem
